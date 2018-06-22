@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xmlns:aop="http://www.springframework.org/schema/aop"
+	   xmlns:tx="http://www.springframework.org/schema/tx"
+	   xmlns:p="http://www.springframework.org/schema/p"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="
+        http://www.springframework.org/schema/beans 
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context 
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/aop 
+        http://www.springframework.org/schema/aop/spring-aop.xsd
+        http://www.springframework.org/schema/tx 
+        http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+	<context:component-scan base-package="com.juzss.crm"/>
+
+	<!-- 配置c3p0数据源 -->
+	<context:property-placeholder location="classpath:jdbc.properties"/>
+	<!-- c3p0数据源 -->
+	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+		<property name="driverClass" value="${jdbc.driverClass}"></property>
+		<property name="jdbcUrl" value="${jdbc.url}"></property>
+		<property name="user" value="${jdbc.username}"></property>
+		<property name="password" value="${jdbc.password}"></property>
+		<property name="minPoolSize" value="5"></property>
+		<property name="maxPoolSize" value="20"></property>
+		<property name="checkoutTimeout" value="120"></property>
+		<property name="idleConnectionTestPeriod" value="3000"></property>
+	</bean>
+
+	<!-- LocalSessionFactoryBean是spring整合hibernate核心，对hibernate配置文件进行初始化 -->
+	<bean id="sessionFactory" class="org.springframework.orm.hibernate5.LocalSessionFactoryBean">
+		<!-- 注入数据源 -->
+		<property name="dataSource" ref="dataSource"></property>
+		<!-- 将hibenrate的其他配置的信息 -->
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">org.hibernate.dialect.MySQLDialect</prop>
+				<prop key="hibernate.show_sql">true</prop>
+				<prop key="hibernate.format_sql">true</prop>
+				<prop key="hibernate.hbm2ddl.auto">update</prop>
+			</props>
+		</property>
+		<!-- 添加映射 -->
+		<property name="mappingDirectoryLocations">
+			<array>
+				<value>classpath:com/juzss/crm/domain</value>
+			</array>
+		</property>
+	</bean>
+
+	<!-- 添加事务管理器 -->
+	<bean id="transactionManager" class="org.springframework.orm.hibernate5.HibernateTransactionManager">
+		<property name="sessionFactory" ref="sessionFactory"></property>
+	</bean>
+	<!-- 注解的方式 -->
+	<tx:annotation-driven transaction-manager="transactionManager"/>
+
+
+	<!-- 创建Action -->
+	<bean id="userAction" class="com.juzss.crm.web.action.UserAction" scope="prototype"></bean>
+	<bean id="customerAction" class="com.juzss.crm.web.action.CustomerAction" scope="prototype"></bean>
+	<bean id="baseDictAction" class="com.juzss.crm.web.action.BaseDictAction" scope="prototype"></bean>
+    <bean id="linkManAction" class="com.juzss.crm.web.action.LinkManAction" scope="prototype"></bean>
+    <bean id="saleVisitAction" class="com.juzss.crm.web.action.SaleVisitAction" scope="prototype"></bean>
+
+
+	<!-- 创建Service -->
+	<bean id="userService" class="com.juzss.crm.service.impl.UserServiceImpl"></bean>
+	<bean id="customerService" class="com.juzss.crm.service.impl.CustomerServiceImpl"></bean>
+	<bean id="baseDictService" class="com.juzss.crm.service.impl.BaseDictServiceImpl"></bean>
+	<bean id="linkManService" class="com.juzss.crm.service.impl.LinkManServiceImpl"></bean>
+	<bean id="saleVisitService" class="com.juzss.crm.service.impl.SaleVisitServiceImpl"></bean>
+
+	<!-- 创建Dao -->
+	<bean id="userDao" class="com.juzss.crm.dao.impl.UserDaoImpl">
+		<property name="sessionFactory" ref="sessionFactory"/>
+	</bean>
+	<bean id="customerDao" class="com.juzss.crm.dao.impl.CustomerDaoImpl">
+		<property name="sessionFactory" ref="sessionFactory"/>
+	</bean>
+	<bean id="baseDictDao" class="com.juzss.crm.dao.impl.BaseDictDaoImpl">
+		<property name="sessionFactory" ref="sessionFactory"/>
+	</bean>
+	<bean id="linkManDao" class="com.juzss.crm.dao.impl.LinkManDaoImpl">
+		<property name="sessionFactory" ref="sessionFactory"/>
+	</bean>
+	<bean id="saleVisitDao" class="com.juzss.crm.dao.impl.SaleVisitDaoImpl">
+		<property name="sessionFactory" ref="sessionFactory"/>
+	</bean>
+</beans>
